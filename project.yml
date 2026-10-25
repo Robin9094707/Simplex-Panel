@@ -14,7 +14,6 @@ settings:
     GENERATE_INFOPLIST_FILE: YES
     INFOPLIST_KEY_CFBundleDisplayName: Simplex Wing
     INFOPLIST_KEY_CFBundleDevelopmentRegion: en
-    INFOPLIST_KEY_CFBundleLocalizations: 'en de'
     INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
     INFOPLIST_KEY_UILaunchScreen_Generation: YES
     INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
