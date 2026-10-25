@@ -143,7 +143,13 @@ struct OperationSheet: View {
     var body: some View {
         ActionForm(title: operation.title, detail: operation.detail, fields: operation.fields, destructive: operation.destructive, submit: operation.submit, allowed: access.allows(path: operation.path, method: operation.method, body: .object(operation.fixed))) { values in
             guard !api.demo else { throw PanelError(message: W("Demo mode shows sample data. Connect your panel to make changes.")) }
-            if let server = operation.stoppedServer { try await ModInstaller.stopped(api, server: server) }
+            if let server = operation.stoppedServer {
+                try await ModInstaller.stopped(api, server: server)
+                if operation.path.hasSuffix("/rename"), let target = operation.fixed["files"]?.array.first?["to"].string {
+                    let rows = try await api.list("servers/\(server)/files/list", query: ["directory": "/plugins"])
+                    guard !rows.contains(where: { $0["name"].string.caseInsensitiveCompare(target) == .orderedSame }) else { throw PanelError(message: W("Target file already exists. Nothing will be overwritten.")) }
+                }
+            }
             let payload = operation.fixed.merging(values) { _, new in new }
             let body = try operation.transform?(payload) ?? .object(payload)
             _ = try await api.request(operation.path, method: operation.method, body: body)

@@ -96,7 +96,7 @@ struct FilesView: View {
         if entry["is_file"].bool {
             Button(W("Edit"), systemImage: "pencil") { open(entry) }.requiresAccess(api, server.id, "file.read-content")
             Button(W("Download"), systemImage: "square.and.arrow.down") { download(entry) }.requiresAccess(api, server.id, "file.read-content")
-            if true {
+            Group {
             Button(W("Copy"), systemImage: "doc.on.doc") { operation = Operation(title: W("Copy file"), path: prefix + "/copy", fixed: ["location": .string(pathJoin(root, name))], submit: W("Copy")) }.requiresRequest(api, prefix + "/copy", method: "POST")
             }
             Button(W("Extract"), systemImage: "archivebox") { operation = Operation(title: W("Extract archive"), path: prefix + "/decompress", fixed: ["root": .string(root), "file": .string(name)], submit: W("Extract")) }.requiresRequest(api, prefix + "/decompress", method: "POST")
@@ -105,7 +105,7 @@ struct FilesView: View {
         Button(W("Move …"), systemImage: "folder") { move([name]) }.requiresAccess(api, server.id, "file.update")
         Button(W("Rename"), systemImage: "pencil.line") { rename(name) }.requiresAccess(api, server.id, "file.update")
         Button(W("Compress"), systemImage: "archivebox.fill") { compress([name]) }.requiresAccess(api, server.id, "file.archive")
-        if true { Button(W("File permissions"), systemImage: "lock.doc") { chmod(name) }.requiresAccess(api, server.id, "file.update") }
+        Group { Button(W("File permissions"), systemImage: "lock.doc") { chmod(name) }.requiresAccess(api, server.id, "file.update") }
         Button(W("Delete"), systemImage: "trash", role: .destructive) { delete([name]) }.requiresAccess(api, server.id, "file.delete")
     }
     func filter() async {

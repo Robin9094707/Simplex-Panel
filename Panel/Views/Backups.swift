@@ -10,7 +10,6 @@ struct BackupsView: View {
     @State private var showTransfers = false
     @State private var share: ShareItem?
     @State private var downloading = false
-    @State private var exportBackup: DetailItem?
     @State private var notice: String?
     var prefix: String { "servers/\(server.id)/backups" }
     var body: some View {
@@ -51,9 +50,7 @@ struct BackupsView: View {
             .sheet(item: $share) { ShareSheet(url: $0.url) }
             .sheet(isPresented: $showTransfers) { TransfersView() }.errorAlert($error)
             .alert(W("Backup export"), isPresented: Binding(get: { notice != nil }, set: { if !$0 { notice = nil } })) { Button("OK") { notice = nil } } message: { Text(notice ?? "") }
-            .confirmationDialog(W("Export backup at provider?"), isPresented: Binding(get: { exportBackup != nil }, set: { if !$0 { exportBackup = nil } }), titleVisibility: .visible) {
-                Button(W("Prepare export")) { if let exportBackup { download(exportBackup.data, exporting: true) }; exportBackup = nil }
-            } message: { Text(W("The provider prepares an exportable file. Time, target folder and availability depend on its backup storage.")) }
+
     }
     @ViewBuilder func actions(_ b: JSON) -> some View {
         let info = BackupInfo(value: b)
@@ -69,24 +66,16 @@ struct BackupsView: View {
     }
     func create() { operation = Operation(title: W("Create backup"), path: prefix, fields: [Field(key: "name", label: W("Name"), value: "Backup " + Date().formatted(date: .numeric, time: .shortened)), Field(key: "is_locked", label: W("Protect from deletion"), value: "false", kind: .toggle), Field(key: "ignored", label: W("Excluded files"), kind: .multiline, hint: W("Optional. One pattern per line, following your panel's backup rules."))], submit: W("Create")) }
     func load(silent: Bool = false) async { do { backups = try await api.list(prefix); loaded = true } catch is CancellationError {} catch { if !silent { self.error = error.localizedDescription } } }
-    func download(_ backup: JSON, exporting: Bool = false) {
+    func download(_ backup: JSON) {
         downloading = true
         Task { defer { downloading = false }; do {
             guard !api.demo else { throw PanelError(message: W("Downloads are disabled in demo mode.")) }
             let info = BackupInfo(value: backup)
             guard !info.id.isEmpty, !info.id.contains("/") else { throw PanelError(message: W("The backup does not have a valid API ID.")) }
-            let response = try await api.request(prefix + "/\(info.id)/" + (exporting ? "export" : "download"), method: exporting ? "POST" : "GET")
-            let signed: String
-            do { signed = try BackupInfo.downloadURL(response, base: api.base) }
-            catch {
-                if exporting {
-                    notice = response["message"].string.isEmpty ? W("The provider accepted the export request but has not returned a download link yet. Check the file manager or web panel after preparation and refresh the backup list.") : response["message"].string
-                    await load(silent: true); return
-                }
-                throw error
-            }
+            let response = try await api.request(prefix + "/\(info.id)/download")
+            let signed = try BackupInfo.downloadURL(response, base: api.base)
             let suffix = URL(string: signed)?.path.lowercased().hasSuffix(".zip") == true ? ".zip" : ".tar.gz"
-            try TransferManager.shared.download(signed, filename: info.id + suffix, context: server.name + " · Backup", source: exporting ? nil : DownloadSource(panel: api.base.absoluteString, server: server.id, kind: "backup", resource: info.id))
+            try TransferManager.shared.download(signed, filename: info.id + suffix, context: server.name + " · Backup", source: DownloadSource(panel: api.base.absoluteString, server: server.id, kind: "backup", resource: info.id))
             showTransfers = true
         } catch { self.error = error.localizedDescription } }
     }

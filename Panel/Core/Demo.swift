@@ -20,8 +20,7 @@ enum Demo {
     static func response(_ path: String, query: [String: String] = [:]) -> JSON {
         if path == "permissions" { return try! JSON.from(["attributes": ["permissions": [
             "control": ["description": W("Control the server and console."), "keys": ["console": W("Send console commands to the server."), "start": W("Start the server."), "stop": W("Stop the server.")]],
-            "file": ["description": W("File management."), "keys": ["read": W("View folder contents."), "update": W("Edit files.")]],
-            "minecraft": ["name": W("Provider player features"), "description": W("Additional permissions in this example panel."), "keys": ["manage": ["name": W("Manage players"), "description": W("Use player management features.")]]]
+            "file": ["description": W("File management."), "keys": ["read": W("View folder contents."), "update": W("Edit files.")]]
         ]]]) }
         if path.isEmpty { return .object(["data": .array(servers.map { .object(["attributes": $0]) })]) }
         if path.contains("files/list"), query["directory"] == "/plugins" { return wrap([["name": "ExamplePlugin.jar", "is_file": true, "size": 4096], ["name": "ExamplePlugin", "is_file": false, "size": 0], ["name": "update", "is_file": false, "size": 0]]) }

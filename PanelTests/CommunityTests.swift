@@ -45,3 +45,29 @@ final class CommunityTests: XCTestCase {
         do { try await api.mutate("servers/demo/power", ["signal":"stop"]); XCTFail("Demo mutation accepted") } catch {}
     }
 }
+
+private final class OfflineFixture: URLProtocol {
+    static var state = "offline"
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type":"application/json"])!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data("{\"attributes\":{\"current_state\":\"\(Self.state)\"}}".utf8))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+    override func stopLoading() {}
+}
+extension CommunityTests {
+    @MainActor func testOfflineGateReadsStandardEnvelope() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [OfflineFixture.self]
+        let session = URLSession(configuration: config)
+        defer { session.invalidateAndCancel() }
+        let api = PanelAPI(base: URL(string: "https://fixture.example")!, key: "ptlc_test", session: session)
+        OfflineFixture.state = "offline"
+        try await ModInstaller.stopped(api, server: "abc")
+        OfflineFixture.state = "running"
+        do { try await ModInstaller.stopped(api, server: "abc"); XCTFail("Running server accepted") } catch {}
+    }
+}
