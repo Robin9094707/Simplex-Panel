@@ -2,7 +2,7 @@ import SwiftUI
 
 struct WelcomeSetup: View {
     @EnvironmentObject private var store: AppStore
-    @AppStorage("wing.language") private var language = Locale.current.language.languageCode?.identifier == "de" ? "de" : "en"
+    @Binding var language: String
     @AppStorage("wing.onboarded") private var complete = false
     @State private var step = 0
     @State private var connect = false

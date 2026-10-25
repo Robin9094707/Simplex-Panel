@@ -21,7 +21,7 @@ import WidgetKit
                 if store.locked { UnlockView() }
                 else { HomeView() }
             }.id(language).onChange(of: language, initial: true) { _, code in if let group = SigningGroups.availableGroup { UserDefaults(suiteName: group)?.set(code, forKey: "wing.language") }; WidgetCenter.shared.reloadAllTimelines() }.environment(\.locale, Locale(identifier: language)).environmentObject(store).environmentObject(workspace).tint(Color.panelAccent)
-                .sheet(isPresented: Binding(get: { !onboarded && !ProcessInfo.processInfo.arguments.contains("--demo") }, set: { _ in })) { WelcomeSetup().interactiveDismissDisabled().presentationDetents([.large]).presentationDragIndicator(.visible) }
+                .sheet(isPresented: Binding(get: { !onboarded && !ProcessInfo.processInfo.arguments.contains("--demo") }, set: { _ in })) { WelcomeSetup(language: $language).id(language).environmentObject(store).environmentObject(workspace).environment(\.locale, Locale(identifier: language)).tint(Color.panelAccent).interactiveDismissDisabled().presentationDetents([.large]).presentationDragIndicator(.visible) }
                 .preferredColorScheme(appearance == "dark" ? .dark : appearance == "light" ? .light : nil)
                 .onChange(of: store.locked) { _, locked in if !locked && scenePhase == .active { ServerActivityManager.shared.resume(api: store.api, servers: store.servers) } }
                 .onChange(of: store.servers) { _, servers in if scenePhase == .active { ServerActivityManager.shared.resume(api: store.api, servers: servers) } }

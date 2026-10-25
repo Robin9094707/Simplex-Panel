@@ -56,7 +56,7 @@ struct WidgetSettingsView: View {
         record.memoryLimit = server.data["limits"]["memory"].double > 0 ? server.data["limits"]["memory"].double * 1_048_576 : nil
         if background {
             let original = api.widgetSecret
-            var credential = WidgetCredential(provider: api.provider.rawValue, secret: original)
+            let credential = WidgetCredential(provider: api.provider.rawValue, secret: original)
             let encoded = String(decoding: try JSONEncoder().encode(credential), as: UTF8.self)
             do { try WidgetVault.save(encoded, panel: record.id) }
             catch { record.backgroundRefresh = false; report = W("Signing did not enable shared access. A snapshot was saved locally; use a data code or sign with matching App Groups.") }

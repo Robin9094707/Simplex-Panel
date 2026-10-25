@@ -9,6 +9,7 @@ final class CommunityUITests: XCTestCase {
         app.buttons["language-en"].tap()
         screenshot("Welcome-English")
         app.buttons["language-de"].tap()
+        XCTAssertTrue(app.staticTexts["Deine Server.\nDein Wing."].waitForExistence(timeout: 10))
         screenshot("Welcome-Deutsch")
         app.buttons["setupNext"].tap()
         XCTAssertTrue(app.buttons["setupDemo"].waitForExistence(timeout: 5))

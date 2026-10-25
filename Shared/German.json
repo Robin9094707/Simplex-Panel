@@ -994,5 +994,6 @@
   "Warnings": "Warnungen",
   "Other": "Weitere",
   "YAML settings": "YAML-Einstellungen",
-  "Time": "Zeit"
+  "Time": "Zeit",
+  "of {{0}} %": "von {{0}} %"
 }

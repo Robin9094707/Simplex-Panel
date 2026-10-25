@@ -31,6 +31,10 @@ jobs:
         run: |
           DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(v["udid"] for k,vs in sorted(d["devices"].items(),reverse=True) if "iOS" in k for v in vs if "iPhone" in v["name"]))')
           echo "id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+      - name: Boot simulator
+        run: |
+          xcrun simctl boot '${{ steps.simulator.outputs.id }}' || true
+          xcrun simctl bootstatus '${{ steps.simulator.outputs.id }}' -b
       - name: Simulator unit and interface tests
         run: |
           set -o pipefail
@@ -61,6 +65,7 @@ jobs:
         if: always()
         run: |
           mkdir -p build/screenshots
+          xcrun simctl spawn booted log show --last 15m --style compact --predicate 'process == "Panel"' > app-runtime.log 2>&1 || true
           if [ -d build/Tests.xcresult ]; then xcrun xcresulttool export attachments --path build/Tests.xcresult --output-path build/screenshots || true; fi
       - uses: actions/upload-artifact@v4
         if: always()
@@ -71,6 +76,7 @@ jobs:
             build/screenshots
             simulator.log
             device.log
+            app-runtime.log
           retention-days: 14
   release:
     name: Publish verified community build

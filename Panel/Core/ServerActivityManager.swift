@@ -45,7 +45,7 @@ import UIKit
     func publish(api: PanelAPI, server: Server, live: LiveServer) {
         guard matches(api, server), Date().timeIntervalSince(lastPublish) >= 10, let activity else { return }
         lastPublish = Date()
-        var state = snapshot(live: live)
+        let state = snapshot(live: live)
         let content = ActivityContent(state: state, staleDate: state.updated.addingTimeInterval(90))
         Task { await activity.update(content) }
     }
