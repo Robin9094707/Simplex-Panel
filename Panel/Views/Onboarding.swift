@@ -40,7 +40,7 @@ struct WelcomeSetup: View {
     }
     func languageButton(_ title: String, code: String) -> some View {
         Button { language = code } label: {
-            HStack { Text(title); Spacer(); Image(systemName: language == code ? "checkmark.circle.fill" : "circle").foregroundStyle(language == code ? Color.panelAccent : .secondary) }.padding(14)
+            HStack { Text(title); Spacer(); Image(systemName: language == code ? "checkmark.circle.fill" : "circle").foregroundStyle(language == code ? Color.panelAccent : .secondary) }.padding(14).contentShape(Rectangle())
         }.buttonStyle(.plain).background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 14)).accessibilityIdentifier("language-" + code)
     }
 }
